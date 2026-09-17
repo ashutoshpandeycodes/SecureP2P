@@ -6,14 +6,14 @@
 
 ---
 
-## 📌 Executive Summary
+##  Executive Summary
 The Secure P2P File Sharing System is a decentralized, multithreaded networking application engineered entirely in Core Java. Bypassing the traditional client-server bottleneck, it implements a true Peer-to-Peer (P2P) architecture where every node functions concurrently as both a sender and a receiver. 
 
 Designed for hostile or zero-trust local networks, the system guarantees end-to-end data confidentiality through a hybrid cryptographic handshake and ensures absolute data integrity via cryptographic hashing. This iteration completely replaces the legacy command-line interface with a responsive, thread-safe Java Swing desktop environment.
 
 ---
 
-## 🖥️ Graphical User Interface (GUI) Implementation
+##  Graphical User Interface (GUI) Implementation
 
 The graphical interface was built exclusively using **Java Swing** and **AWT (Abstract Window Toolkit)**, ensuring the application remains lightweight and natively executable without requiring external UI libraries like JavaFX.
 
@@ -24,7 +24,7 @@ The graphical interface was built exclusively using **Java Swing** and **AWT (Ab
 
 ---
 
-## ⚙️ Core Technical Architecture
+##  Core Technical Architecture
 
 This project demonstrates advanced software engineering principles, specifically focusing on thread safety, dynamic memory management during I/O operations, and applied cryptography using the Java Cryptography Architecture (JCA).
 
@@ -48,7 +48,7 @@ Relying on a single encryption method is either too slow (Asymmetric) or insecur
 
 ---
 
-## 🚀 Setup & Execution Guide
+##  Setup & Execution Guide
 
 ### Prerequisites
 * Java Runtime Environment (JRE) or Java Development Kit (JDK) 11+ installed and added to your system's `PATH`.
@@ -70,7 +70,7 @@ Because this is a true P2P system, testing it on a single computer requires runn
 
 ---
 
-## 📖 Usage Guide: Transferring a File
+##  Usage Guide: Transferring a File
 
 **Step 1: Initialize the Receiver (Node A)**
 * On the first window, navigate to the **1. Receiver (Server Setup)** panel.
