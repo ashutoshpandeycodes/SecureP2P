@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="SecureP2P:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/SecureP2P_jar</output-path>
-    <root id="archive" name="vityarthiprojectjava.jar">
-      <element id="module-output" name="vityarthiprojectjava" />
-    </root>
-  </artifact>
-</component>
