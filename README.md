@@ -74,3 +74,8 @@ Since this is a standalone JAR, you can run it directly from your terminal or co
 * Node A's terminal will display the incoming connection, the RSA public key exchange, the AES session establishment, and the file transfer progress.
 * Upon completion, Node A will perform a SHA-256 integrity check and print a `SUCCESS` message.
 * The file will be saved in the directory where Node A was executed, prefixed with `received_`.
+### Troubleshooting: 'java' is not recognized
+If you receive an error stating that 'java' is not recognized as an internal or external command, your system cannot find the Java Runtime Environment.
+1. Download the latest Java installer (e.g., Eclipse Temurin or Oracle JDK).
+2. During installation, ensure you check the box that says **"Add to PATH"** or **"Set JAVA_HOME variable"**.
+3. Close and reopen your terminal, then run the command again.
