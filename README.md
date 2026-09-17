@@ -1,81 +1,93 @@
-# Secure P2P File Sharing System
+# Secure P2P File Sharing System 
 
 **Developer:** Ashutosh Kumar Pandey  
 **Institution:** VIT Bhopal University  
-**Program:** B.Tech in Computer Science and Engineering (AI/ML)
+**Program:** B.Tech in Computer Science and Engineering (AI/ML)  
 
 ---
 
-##  Project Overview
-The Secure P2P File Sharing System is a decentralized, multithreaded networking application built entirely in Core Java. Bypassing the traditional client-server architecture, this system implements a true Peer-to-Peer (P2P) model where every node acts as both a sender and a receiver.
+## 📌 Executive Summary
+The Secure P2P File Sharing System is a decentralized, multithreaded networking application engineered entirely in Core Java. Bypassing the traditional client-server bottleneck, it implements a true Peer-to-Peer (P2P) architecture where every node functions concurrently as both a sender and a receiver. 
 
-To ensure complete data security and privacy over public or local networks, the application implements a hybrid cryptographic handshake (RSA + AES) and verifies data integrity post-transfer using SHA-256 hashing.
-
-###  Why a JAR Executable? (Usability & Deployment)
-This project is packaged as a **Standalone Executable JAR (Java ARchive)**. This architectural decision was made to significantly improve usability, convenience, and deployment flexibility:
-1. **Zero-Configuration Deployment:** Evaluators and end-users do not need to install an IDE (like IntelliJ or Eclipse), configure build paths, or manage run configurations to test the application.
-2. **Cross-Platform Compatibility:** The JAR file encapsulates all compiled classes and can be run instantly on any operating system (Windows, macOS, Linux) via the command line, provided the Java Runtime Environment (JRE) is installed.
-3. **True P2P Simulation:** By using a JAR, users can effortlessly copy the single file to multiple different computers on the same Local Area Network (LAN) and execute them independently, perfectly simulating a real-world decentralized network without needing internet access.
+Designed for hostile or zero-trust local networks, the system guarantees end-to-end data confidentiality through a hybrid cryptographic handshake and ensures absolute data integrity via cryptographic hashing. This iteration completely replaces the legacy command-line interface with a responsive, thread-safe Java Swing desktop environment.
 
 ---
 
-## ️Core Architecture & Technical Implementation
+## 🖥️ Graphical User Interface (GUI) Implementation
 
-### 1. Hybrid Cryptography (End-to-End Security)
-* **RSA (2048-bit Asymmetric):** Used for secure session key exchange. Upon connection, the receiving node generates a temporary RSA key pair and transmits its public key to the sender.
-* **AES (128-bit Symmetric):** Used for bulk file encryption. The sender generates a random AES session key, encrypts it using the receiver's RSA public key, and transmits it. Both peers then share a secure channel.
+The graphical interface was built exclusively using **Java Swing** and **AWT (Abstract Window Toolkit)**, ensuring the application remains lightweight and natively executable without requiring external UI libraries like JavaFX.
 
-### 2. Concurrent Networking & Threading
-* **Socket TCP/IP:** Utilizes `java.net.Socket` and `ServerSocket` for reliable data streaming.
-* **Thread Pooling (`ExecutorService`):** The engine manages a pool of background threads. A node can handle multiple incoming file downloads concurrently while actively sending a file to another peer, completely avoiding main-thread blocking.
-
-### 3. Memory-Efficient I/O & Integrity Check
-* **Cipher Streams:** Wraps the socket streams with `CipherInputStream` and `CipherOutputStream`. Files are read, encrypted, and transmitted in dynamic 4KB chunks. This prevents `OutOfMemoryError`, allowing the smooth transfer of large multi-gigabyte files.
-* **SHA-256 Hashing:** The sender hashes the original file and transmits the checksum. The receiver hashes the final downloaded file and compares the results. A match mathematically guarantees the file suffered zero packet corruption or tampering during network transit.
+* **Component Architecture:** The interface extends `JFrame` and utilizes a nested layout strategy. `BorderLayout` dictates the primary window structure, while nested `JPanel` containers use `FlowLayout` and `GridLayout` to cleanly organize the Receiver (Server) and Sender (Client) configuration panels.
+* **Native OS Integration:** The application dynamically applies the host system's native look and feel via `UIManager.getSystemLookAndFeelClassName()`, ensuring it looks like a natural Windows application rather than a legacy Java applet.
+* **Interactive Elements:** File selection is handled natively via `JFileChooser`, mapping the absolute system path of the payload. Live telemetry and error handling are streamed to a non-editable `JTextArea` wrapped in a `JScrollPane` for real-time monitoring.
+* **Event Dispatch Thread (EDT) Safety:** GUI frameworks are inherently single-threaded. To prevent the interface from freezing during a heavy 5GB file transfer, all UI updates triggered by the network layer (such as cryptographic handshakes or progress logs) are asynchronously queued to the EDT using `SwingUtilities.invokeLater()`. This strictly decouples the visual frontend from the blocking I/O backend.
 
 ---
 
-## Setup & Execution Guide
+## ⚙️ Core Technical Architecture
+
+This project demonstrates advanced software engineering principles, specifically focusing on thread safety, dynamic memory management during I/O operations, and applied cryptography using the Java Cryptography Architecture (JCA).
+
+### 1. Hybrid Cryptographic Engine (End-to-End Security)
+Relying on a single encryption method is either too slow (Asymmetric) or insecure for key transmission (Symmetric). This system implements a hybrid handshake:
+* **RSA-2048 (Asymmetric):** Secures the initial connection. When Node A connects to Node B, Node B generates a fresh, temporary RSA key pair using `KeyPairGenerator` and transmits its Public Key over the raw socket.
+* **AES-128 (Symmetric):** Optimizes bulk data transfer. Node A generates a randomized AES session key (`KeyGenerator`), encrypts it using Node B's RSA Public Key, and transmits it. Both nodes now share a highly secure, private AES key for the remainder of the session without ever exposing it in plain text.
+
+### 2. Concurrent Networking & Thread Management
+* **TCP/IP Sockets:** Utilizes `java.net.Socket` and `ServerSocket` for reliable, connection-oriented byte-stream delivery across local or public networks.
+* **`ExecutorService` Thread Pooling:** Instead of manually spawning unmanaged `Thread` objects (which is resource-intensive), the backend utilizes `Executors.newFixedThreadPool(10)`. This allows a single node to handle multiple incoming client connections and outgoing file transfers simultaneously in the background.
+* **Runnable Tasks:** The core network operations are divided into decoupled `Runnable` classes (`PeerServer`, `ClientHandler`, `FileSender`), allowing the thread pool to execute them completely independently of the main application thread.
+
+### 3. Memory-Safe Data Streaming
+* **Dynamic Chunking via Cipher Streams:** Standard file transfers load the entire byte array into memory, causing an `OutOfMemoryError` on large files. This application wraps the raw `DataInputStream` and `DataOutputStream` directly with `CipherInputStream` and `CipherOutputStream`. 
+* **Zero-Footprint Streaming:** The file is read from the disk, AES-encrypted on the fly, and pushed over the TCP network in discrete **4KB chunks**. This keeps the RAM footprint near zero, regardless of whether the file is 1MB or 100GB.
+
+### 4. Cryptographic Integrity Verification
+* **SHA-256 Hashing (`MessageDigest`):** Network packets can drop, and malicious actors can attempt to tamper with the byte stream mid-transfer. Before transmission, the sender calculates a precise SHA-256 checksum of the original file and sends it as string metadata. 
+* **Post-Transfer Validation:** The receiver independently hashes the final decrypted file stored on their disk. The system compares the two hashes; a perfect string match mathematically guarantees the file suffered zero packet corruption or alteration during network transit.
+
+---
+
+## 🚀 Setup & Execution Guide
 
 ### Prerequisites
-* Java Runtime Environment (JRE) 11 or higher installed on your machine.
+* Java Runtime Environment (JRE) or Java Development Kit (JDK) 11+ installed and added to your system's `PATH`.
 
 ### Running the Application
-Since this is a standalone JAR, you can run it directly from your terminal or command prompt.
+You can run this application by executing the compiled JAR file or directly through an IDE. 
 
-1. Open your terminal/command prompt.
-2. Navigate to the directory containing the JAR file.
-3. Execute the following command:
-   ```bash
-   java -jar SecureP2P.jar
-   ```
+**Option 1: Using the Standalone JAR**
+1. Download `SecureP2P.jar` from the GitHub Releases page.
+2. Double-click the `.jar` file to instantly launch the graphical interface. 
+3. *Alternatively, execute via terminal:* `java -jar SecureP2P.jar`
 
-*(Note: To test locally on a single machine, open two separate terminal windows and run the command in both to simulate two different nodes).*
+**Option 2: Running via IDE (Local Network Simulation)**
+Because this is a true P2P system, testing it on a single computer requires running two separate instances to act as distinct nodes.
+1. Open the project in IntelliJ IDEA.
+2. Ensure **"Allow multiple instances"** is enabled in your Run Configurations.
+3. Run the `SecureP2PGUI` class to launch **Node A**.
+4. Run the `SecureP2PGUI` class a second time to launch **Node B**.
 
 ---
 
-## Usage Guide: Transferring a File
+## 📖 Usage Guide: Transferring a File
 
-**1. Start Node A (Receiver)**
-* Run the JAR in Terminal 1.
-* When prompted, enter a port to listen on (e.g., `8080`).
+**Step 1: Initialize the Receiver (Node A)**
+* On the first window, navigate to the **1. Receiver (Server Setup)** panel.
+* Enter a local port to bind to (e.g., `8080`).
+* Click **Start Listening**. The node is now ready to accept incoming secure connections.
 
-**2. Start Node B (Sender)**
-* Run the JAR in Terminal 2.
-* When prompted, enter a different port (e.g., `8081`).
+**Step 2: Initialize the Sender (Node B)**
+* On the second window, navigate to the **1. Receiver** panel and bind to a *different* port (e.g., `8081`) so it doesn't conflict with Node A. Click **Start Listening**.
 
-**3. Initiate Transfer (from Node B)**
-* In Terminal 2, type `1` to select "Send File".
-* **Target IP:** Enter `127.0.0.1` (or the local LAN IP if using a second physical computer).
-* **Target Port:** Enter `8080` (Node A's port).
-* **File Path:** Enter the absolute path to a file on your system (e.g., `C:\Users\Name\Documents\assignment.pdf`).
+**Step 3: Execute the Transfer (From Node B to Node A)**
+* On Node B, navigate to the **2. Sender (Client Setup)** panel.
+* **Target IP:** Enter `127.0.0.1` (or the specific local network IP if transferring between two physical computers).
+* **Target Port:** Enter `8080` (the port Node A is actively listening on).
+* Click **Select File...** to choose a payload from your local machine.
+* Click **Send File securely**.
 
-**4. Monitor & Verify**
-* Node A's terminal will display the incoming connection, the RSA public key exchange, the AES session establishment, and the file transfer progress.
-* Upon completion, Node A will perform a SHA-256 integrity check and print a `SUCCESS` message.
-* The file will be saved in the directory where Node A was executed, prefixed with `received_`.
-### Troubleshooting: 'java' is not recognized
-If you receive an error stating that 'java' is not recognized as an internal or external command, your system cannot find the Java Runtime Environment.
-1. Download the latest Java installer (e.g., Eclipse Temurin or Oracle JDK).
-2. During installation, ensure you check the box that says **"Add to PATH"** or **"Set JAVA_HOME variable"**.
-3. Close and reopen your terminal, then run the command again.
+**Step 4: Monitor Live Telemetry**
+* The **3. Transfer Logs & Verification** panel on both screens will instantly update.
+* Watch the cryptographic handshake occur in real-time, followed by the progressive file transfer. 
+* Upon completion, the receiver node will print a `SUCCESS` message confirming the SHA-256 integrity match. The file is saved directly to the application's root execution directory with a `received_` prefix.
